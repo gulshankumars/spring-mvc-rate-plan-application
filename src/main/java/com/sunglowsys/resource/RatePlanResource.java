@@ -1,46 +1,79 @@
 package com.sunglowsys.resource;
 
 import com.sunglowsys.domain.RatePlan;
+import com.sunglowsys.resource.util.BadRequestException;
 import com.sunglowsys.service.RatePlanService;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.net.URISyntaxException;
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api")
 public class RatePlanResource {
 
-    @Autowired
-    private RatePlanService ratePlanService;
+    private final Logger log = LoggerFactory.getLogger(RatePlanResource.class);
 
-    @PostMapping("/rate_plan")
-    public ResponseEntity<?> create(@RequestBody RatePlan ratePlan){
+    private final RatePlanService ratePlanService;
+
+    public RatePlanResource(RatePlanService ratePlanService) {
+        this.ratePlanService = ratePlanService;
+    }
+
+    @PostMapping("/rate-plans")
+    public ResponseEntity<RatePlan> createRatePlan(@RequestBody RatePlan ratePlan) throws URISyntaxException {
+        log.debug("REST request to save RatePlan : {}",ratePlan);
+        if (ratePlan.getId() != null){
+            throw new BadRequestException("Id should be null in create api call");
+        }
         RatePlan result = ratePlanService.create(ratePlan);
-        return ResponseEntity.ok().body(" RatePlan is created successfully: " + result);
+        return ResponseEntity
+                .ok()
+                .body(result);
     }
 
-    @GetMapping
-    public List<RatePlan> getAll(){
-        List<RatePlan> result1 = ratePlanService.findAll();
-        return result1;
+    @GetMapping("/rate-plans")
+    public ResponseEntity<List<RatePlan>> getAllRatePlan( @RequestBody Pageable pageable){
+        log.debug("REST request to get RatePlan : {}", pageable.toString());
+        Page<RatePlan> result = ratePlanService.findAll(pageable);
+        return ResponseEntity
+                .ok()
+                .body(result.getContent());
     }
 
-    @GetMapping("find_rate_plan/{id}")
-    public RatePlan getById(@PathVariable("id") Integer id){
-        return ratePlanService.findById(id);
+    @GetMapping("rate-plan/{id}")
+    public ResponseEntity<RatePlan> getRatePlanById(@PathVariable("id") Long id){
+        log.debug("REST request to RstePlan : {}", id);
+       Optional<RatePlan> result = ratePlanService.findById(id);
+        return ResponseEntity
+                .ok()
+                .body(result.get());
     }
 
-    @PutMapping("/update/{id}")
-    public ResponseEntity<?> update(@RequestBody RatePlan ratePlan, @PathVariable("id") Integer id){
-        ratePlanService.update(ratePlan, id);
-        return ResponseEntity.ok().body(" RatePlan is updated successfully: " + id);
+    @PutMapping("/rate-plan/{id}")
+    public ResponseEntity<RatePlan> updateRatePlan(@RequestBody RatePlan ratePlan, @PathVariable("id") Long id) throws URISyntaxException{
+        log.debug("REST request to update RatePlan : {}",id);
+        if (ratePlan.getId() == null){
+            throw new BadRequestException("Id should not be null in update api call");
+        }
+        RatePlan result = ratePlanService.update(ratePlan,id);
+        return ResponseEntity
+                .ok()
+                .body(result);
     }
 
-    @DeleteMapping("delete/{id}")
-    public ResponseEntity<?> delete(@PathVariable("id") Integer id){
+    @DeleteMapping("rate-plan/{id}")
+    public ResponseEntity<RatePlan> delete(@PathVariable("id") Long id){
+        log.debug("REST request to delete RatePlan : {}", id);
         ratePlanService.delete(id);
-        return ResponseEntity.ok().body(" RatePlan is successfully Deleted on this ID: " + id);
+        return ResponseEntity
+                .ok()
+                .build();
     }
 }

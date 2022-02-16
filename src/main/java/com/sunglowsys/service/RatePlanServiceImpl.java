@@ -2,52 +2,57 @@ package com.sunglowsys.service;
 
 import com.sunglowsys.domain.RatePlan;
 import com.sunglowsys.repository.RatePlanRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
 
 @Service
+@Transactional
 public class RatePlanServiceImpl implements RatePlanService{
 
-    @Autowired
-    private RatePlanRepository ratePlanRepository;
+    private  final Logger log = LoggerFactory.getLogger(RatePlanServiceImpl.class);
+
+
+    private final RatePlanRepository ratePlanRepository;
+
+    public RatePlanServiceImpl(RatePlanRepository ratePlanRepository) {
+        this.ratePlanRepository = ratePlanRepository;
+    }
 
     @Override
     public RatePlan create(RatePlan ratePlan) {
+        log.debug("Request to save RatePlan : {}",ratePlan);
         return ratePlanRepository.save(ratePlan);
     }
 
     @Override
-    public RatePlan update(RatePlan ratePlan, Integer id) {
-        RatePlan ratePlan1 = ratePlanRepository.getById(id);
-        ratePlan1.setName(ratePlan1.getName());
-        ratePlan1.setHotelId(ratePlan1.getHotelId());
-        ratePlan1.setRoomTypeId(ratePlan1.getRoomTypeId());
+    public RatePlan update(RatePlan ratePlan, Long id) {
+        log.debug("Request to update RatePlan : {}",ratePlan);
         return ratePlanRepository.save(ratePlan);
+
     }
 
     @Override
-    public List<RatePlan> findAll() {
-        return ratePlanRepository.findAll();
+    public Page<RatePlan> findAll(Pageable pageable) {
+        log.debug("Request to update RatePlan : {}",pageable.toString());
+        return ratePlanRepository.findAll(pageable);
     }
 
     @Override
-    public RatePlan findById(Integer id) {
-        Optional<RatePlan> optional = ratePlanRepository.findById(id);
-        RatePlan ratePlan = null;
-        if (optional.isPresent()){
-            ratePlan = optional.get();
-        }
-        else {
-            throw new RuntimeException("Rate-Plan is not found for id:" +id);
-        }
-        return ratePlan;
+    public Optional<RatePlan> findById(Long id) {
+       log.debug("Request to get RatePlan : {}", id);
+       return ratePlanRepository.findById(id);
     }
 
     @Override
-    public void delete(Integer id) {
+    public void delete(Long id) {
+        log.debug("Request to delete RatePlan : {}",id);
         ratePlanRepository.deleteById(id);
     }
 }

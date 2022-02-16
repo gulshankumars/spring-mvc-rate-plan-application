@@ -21,6 +21,13 @@ public class RatePlan {
         System.out.println("RatePlan object is created :");
     }
 
+    public RatePlan(Integer id, String name, Integer hotelId, Integer roomTypeId) {
+        this.id = id;
+        this.name = name;
+        this.hotelId = hotelId;
+        this.roomTypeId = roomTypeId;
+    }
+
     public Integer getId() {
         return id;
     }
